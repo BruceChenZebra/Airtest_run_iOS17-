@@ -1,0 +1,52 @@
+import os
+import subprocess
+import time
+from airtest.core.api import connect_device, device, sleep, auto_setup, click, text
+from poco.drivers.ios import iosPoco
+
+WDA_Package_Name = 'xxx'
+uuid = 'xxx'
+WDA_ipa_path = r'tidevice install C:\xxx\xxxx\xxxx\xxxxx\xxxxx\wda.ipa'
+
+def new_start_app_for_ios_17_and_18(appPackageName):
+    launch_app_command = [
+        'ios', 'launch',
+        appPackageName
+    ]
+    subprocess.run(launch_app_command, check=True)
+
+os.system(WDA_ipa_path)
+time.sleep(6)
+
+run_wda_command = [
+    'ios', 'runwda',
+    f'--bundleid={WDA_Package_Name}',
+    f'--testrunnerbundleid={WDA_Package_Name}',
+    '--xctestconfig=WebDriverAgentRunner.xctest'
+]
+subprocess.Popen(run_wda_command)
+
+time.sleep(6)
+
+
+Bonding = connect_device("ios:///http+usbmux://"+uuid)
+poco = iosPoco(device= Bonding)
+dev = device()
+width, height = dev.get_current_resolution()
+
+auto_setup(logdir='./ios', compress=3,
+           devices=[f"ios:///http+usbmux://{uuid}"])
+sleep(6)
+Bonding.start_recording(fps=4,orientation=1)
+
+
+new_start_app_for_ios_17_and_18("com.apple.AppStore")
+
+poco(nameMatches=".*search").click()
+poco(nameMatches="AppStore.searchField").click()
+text("微信")
+click([width*0.5,height*0.5])
+
+Bonding.stop_recording()
+
+os.system(f'tidevice uninstall {WDA_Package_Name}')
