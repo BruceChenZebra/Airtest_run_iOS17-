@@ -9,10 +9,10 @@ uuid = 'xxx'
 WDA_ipa_path = r'tidevice install C:\xxx\xxxx\xxxx\xxxxx\xxxxx\wda.ipa'
 
 def new_start_app_for_ios_17_and_18(appPackageName):
-    launch_app_command = [
-        'ios', 'launch',
-        appPackageName
-    ]
+    kill_app_command = ['ios', 'kill',appPackageName]
+    launch_app_command = ['ios', 'launch',appPackageName]
+    # you need to kill the app firstly, and then start the app, otherwith it would fail to open the app after you open the app more than 188 times
+    subprocess.run(kill_app_command, check=True)
     subprocess.run(launch_app_command, check=True)
 
 os.system(WDA_ipa_path)
